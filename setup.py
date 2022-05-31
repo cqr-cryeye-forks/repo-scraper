@@ -9,7 +9,7 @@ setup(
       author_email='edu.blancas@gmail.com',
       license='MIT',
       packages=['repo_scraper', 'repo_scraper/constants', 'bin'],
-      scripts=['bin/check_dir.py', 'bin/check_repo.py', 'repo-scraper'],
+      scripts=['bin/check_dir.py', 'bin/check_repo.py', './repo-scraper'],
       test_suite='nose.collector',
       tests_require=['nose'],
       zip_safe=False
