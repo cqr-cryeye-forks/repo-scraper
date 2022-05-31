@@ -11,15 +11,17 @@ All scripts work the same from the user point of view, enter any command with `-
 
 ## Example
 
-Check your dummy-project:
+### Folder
+Check your project:
 ```bash
-repo-scraper -p dummy-project
-```
-or 
-```bash
-check_repo dummy-project
+repo-scraper --path path/to/project
 ```
 
+### Git
+```bash
+repo-scraper --git-path path/to/project
+```
+You can add `--branch NAME` to specify git branch
 #### Output:
 ```bash
 Alert! - Match in C:\Users\nicko\Documents\GitHub\repo-scraper\dummy-project\python_file_with_password.py
@@ -93,7 +95,6 @@ Adding a IGNORE file will make execution faster, since many regular expressions 
 ## What's missing
 
 * URLs
-* Check other branches apart from master
 
 # TODO
 * Come up with a cool name

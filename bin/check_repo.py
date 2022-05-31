@@ -33,7 +33,7 @@ def check_repo(results_to_print: list = None):
 
     # Create an instance of git checker_parser.add_argument("-v", "--verbose", action="store_true",
     # help="prints all results, including no matches and warnings")
-    gc = GitChecker(allowed_extensions=allowed_extensions, git_dir=path)
+    gc = GitChecker(allowed_extensions=allowed_extensions, git_dir=path, git_branch=args.branch)
 
     # Get the generator that will turn one resul per file modified in each commit
     file_traverser = gc.file_traverser()
@@ -46,8 +46,8 @@ def check_repo(results_to_print: list = None):
     if args.output:
         save_result(output=args.output, result=shown_results, as_json=args.json)
 
-    print('\033[93mNote: you are in the first commit, if you want to go to the last one do git checkout master.\033[0m')
-
+    print(f'\033[93mNote: you are in the first commit, if you want to go to the last one do '
+          f'git checkout {args.branch}.\033[0m')
 
 if __name__ == '__main___':
     check_repo()

@@ -14,6 +14,7 @@ parser.add_argument("-gp", "--git-path", type=str,
                     help="Git repository location, if this is not provided, the script will run on the "
                          "working directory")
 parser.add_argument("-i", "--ignore", type=str, help="Optional ignore file")
+parser.add_argument("-b", "--branch", type=str, default='master', help="Choose branch. Default is master")
 parser.add_argument("-o", "--output", type=str, help="Output file for results")
 parser.add_argument("-j", "--json", action="store_true", help="Save results as json")
 parser.add_argument("-w", "--warnings", action="store_true", help="Print warnings (and alerts)")

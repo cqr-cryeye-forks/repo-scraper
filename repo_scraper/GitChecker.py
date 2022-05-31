@@ -6,15 +6,16 @@ from repo_scraper.Git import Git
 
 
 class GitChecker:
-    def __init__(self, allowed_extensions, git_dir):
+    def __init__(self, allowed_extensions, git_dir, git_branch: str = 'master'):
         self.allowed_extensions = allowed_extensions
         self.git_dir = git_dir
         self.git = Git(git_dir)
+        self.branch = git_branch
 
     def file_traverser(self):
-        # Checkout master
-        print('git checkout master')
-        self.git.checkout('master')
+        # Checkout git branch
+        print(f'git checkout {self.branch}')
+        self.git.checkout(self.branch)
 
         # Get all commits in chronological order
         commits = self.git.list_commits()
@@ -22,7 +23,7 @@ class GitChecker:
         commit_pairs = zip(commits[:-1], commits[1:])
 
         # Go to the first commit
-        print(f'git checkout {commits[0]} (first commit in master)')
+        print(f'git checkout {commits[0]} (first commit in {self.branch})')
         self.git.checkout(commits[0])
 
         # Get generator to check the first commit
