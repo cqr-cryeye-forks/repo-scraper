@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+from bin.arguments import args
+from bin.check_dir import check_dir
+from bin.check_repo import check_repo
+from bin.utils import get_results_level
+
+
+def run_scan():
+    results_to_print = get_results_level()
+    if args.git_path:
+        check_repo(results_to_print)
+    else:
+        check_dir(results_to_print)
+
+
+if __name__ == "__main__":
+    run_scan()

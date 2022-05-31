@@ -1,8 +1,10 @@
 from unittest import TestCase
+
 from repo_scraper import matchers
 
-#what if it's not quoted? what if is spanned across more than one line
-#is this reasonable to test? p=some-password
+
+# what if it's not quoted? what if is spanned across more than one line
+# is this reasonable to test? p=some-password
 
 class HardcodedPasswordString(TestCase):
     def test_detects_easy_password(self):
@@ -75,6 +77,7 @@ class HardcodedPasswordString(TestCase):
         self.assertFalse(password_matcher)
         self.assertEqual(matches, None)
 
+
 class HardcodedURLs(TestCase):
     def test_detects_sqlalchemy_engine(self):
         str_to_check = 'db-schema://user:strong-pwd@localhost:5432/mydb'
@@ -99,6 +102,7 @@ class HardcodedURLs(TestCase):
         password_matcher, matches = matchers.password_matcher(str_to_check)
         self.assertTrue(password_matcher)
         self.assertEqual(matches, [str_to_check])
+
 
 class HardcodedPasswordsInJSON(TestCase):
     def test_detects_hardcoded_value_json(self):
@@ -141,8 +145,9 @@ class HardcodedPasswordsInJSON(TestCase):
                             "   pass"  :    "dont-hack-me-please"     \n\n\t
                         }'''
         password_matcher, matches = matchers.password_matcher(str_to_check)
-        #self.assertTrue(password_matcher)
-        #self.assertEqual(matches, ['"   pass"  :    "dont-hack-me-please"'])
+        # self.assertTrue(password_matcher)
+        # self.assertEqual(matches, ['"   pass"  :    "dont-hack-me-please"'])
+
     def test_ignores_json_without_passwords(self):
         str_to_check = '''{
                             "some_key": "this is not a password",
@@ -151,6 +156,7 @@ class HardcodedPasswordsInJSON(TestCase):
         password_matcher, matches = matchers.password_matcher(str_to_check)
         self.assertFalse(password_matcher)
         self.assertEqual(matches, None)
+
     def test_detects_url_in_json_file(self):
         str_to_check = '''{
                             "engine": "db-schema://user:strong-pwd@localhost:5432/mydb",
@@ -159,6 +165,7 @@ class HardcodedPasswordsInJSON(TestCase):
         password_matcher, matches = matchers.password_matcher(str_to_check)
         self.assertTrue(password_matcher)
         self.assertEqual(matches, ['"db-schema://user:strong-pwd@localhost:5432/mydb"'])
+
 
 class HardcodedPasswordsInYAML(TestCase):
     def test_detects_hardcoded_double_quotes(self):
@@ -174,6 +181,7 @@ class HardcodedPasswordsInYAML(TestCase):
         password_matcher, matches = matchers.password_matcher(str_to_check)
         self.assertTrue(password_matcher)
         self.assertEqual(matches, ['password:   "password"'])
+
     def test_detects_hardcoded_with_a_double_quote(self):
         str_to_check = '''
                             db:
@@ -186,6 +194,7 @@ class HardcodedPasswordsInYAML(TestCase):
         password_matcher, matches = matchers.password_matcher(str_to_check)
         self.assertTrue(password_matcher)
         self.assertEqual(matches, ["password: '\"klu89oinlk'"])
+
     def test_detects_hardcoded_with_a_single_quote(self):
         str_to_check = '''
                         database: 
@@ -200,13 +209,15 @@ class HardcodedPasswordsInYAML(TestCase):
         self.assertTrue(password_matcher)
         self.assertEqual(matches, ['password:   "thispwdhasthis\'"'])
 
+
 class HardcodedPasswordsInCSV(TestCase):
     def test_detects_hardcoded_value_csv(self):
-        #str_to_check = '''password, qwerty'''
-        #password_matcher, matches = matchers.password_matcher(str_to_check)
-        #self.assertTrue(password_matcher)
-        #self.assertEqual(matches, ['password, qwerty'])
+        # str_to_check = '''password, qwerty'''
+        # password_matcher, matches = matchers.password_matcher(str_to_check)
+        # self.assertTrue(password_matcher)
+        # self.assertEqual(matches, ['password, qwerty'])
         pass
+
 
 class HardcodedPasswordsInGenericPlainText(TestCase):
     pass
