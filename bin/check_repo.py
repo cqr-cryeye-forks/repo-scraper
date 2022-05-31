@@ -28,8 +28,10 @@ def check_repo(results_to_print: list = None):
     # Default path is working directory, change if user
     # specified a different one
     path = '.' if args.git_path is None else args.git_path
-
-    print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
+    if args.all_files:
+        print('Scan all files')
+    else:
+        print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
 
     # Create an instance of git checker_parser.add_argument("-v", "--verbose", action="store_true",
     # help="prints all results, including no matches and warnings")

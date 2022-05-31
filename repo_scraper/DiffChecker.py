@@ -1,3 +1,4 @@
+from bin.arguments import args
 from repo_scraper import matchers as m, filetype
 from repo_scraper.Result import *
 
@@ -25,7 +26,7 @@ class DiffChecker:
             return Result(self.filename, self.error)
 
         # Check if extension/mimetype is allowed
-        if filetype.get_extension(self.filename) not in self.allowed_extensions:
+        if filetype.get_extension(self.filename) not in self.allowed_extensions and not args.all_files:
             return Result(identifier, FILETYPE_NOT_ALLOWED)
 
         # Start applying rules...

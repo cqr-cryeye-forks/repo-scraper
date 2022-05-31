@@ -25,7 +25,10 @@ def check_dir(results_to_print: list[str] = None):
     if type(args.extensions) != list:
         allowed_extensions = re.compile(',\s*\.?').split(allowed_extensions.lower())
 
-    print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
+    if args.all_files:
+        print('Scan all files')
+    else:
+        print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
 
     if ignore_path:
         print(f'Using ignore file: {ignore_path}\n')

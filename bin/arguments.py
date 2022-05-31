@@ -18,10 +18,12 @@ parser.add_argument("-b", "--branch", type=str, default='master', help="Choose b
 parser.add_argument("-o", "--output", type=str, help="Output file for results")
 parser.add_argument("-j", "--json", action="store_true", help="Save results as json")
 parser.add_argument("-w", "--warnings", action="store_true", help="Print warnings (and alerts)")
-parser.add_argument("-a", "--printall", action="store_true",
+parser.add_argument("-pa", "--printall", action="store_true",
                     help="Print everything (alerts, warnings and non-matches)")
 parser.add_argument("-f", "--force", action="store_true",
                     help="Force execution, prevents confirmation prompt form appearing")
+parser.add_argument("-a", "--all-files", action="store_true",
+                    help="Scan all files")
 parser.add_argument("-g", "--include-git", action="store_true",
                     help="Includes .git/ folder in the search scope, disabled by default")
 

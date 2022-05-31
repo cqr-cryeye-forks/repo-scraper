@@ -1,5 +1,6 @@
 import os
 
+from bin.arguments import args
 from repo_scraper import filetype, matchers as m
 from repo_scraper.Result import *
 
@@ -24,14 +25,17 @@ class FileChecker:
             return Result(self.path, BIG_FILE)
 
         # Check if extension is allowed
-        if filetype.get_extension(self.path) not in self.allowed_extensions:
+        if filetype.get_extension(self.path) not in self.allowed_extensions and not args.all_files:
             return Result(self.path, FILETYPE_NOT_ALLOWED)
 
         # At this point you only have files with allowed extensions and
         # smaller than max_file_size_bytes
         # open the file and then apply all rules
         with open(self.path, 'r', encoding='utf8') as f:
-            content = f.read()
+            try:
+                content = f.read()
+            except UnicodeDecodeError:
+                return Result(self.path, FILETYPE_NOT_ALLOWED)
 
         # Last check: search for potential base64 strings and remove them, send a warning
         has_base64, content = m.base64_matcher(content, remove=True)
