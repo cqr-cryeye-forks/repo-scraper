@@ -6,7 +6,7 @@ from repo_scraper.Result import *
 
 
 class FileChecker:
-    def __init__(self, path, allowed_extensions, max_file_size_bytes=1048576):
+    def __init__(self, path, allowed_extensions, max_file_size_bytes=10485760):
         self.path = path
         self.max_file_size_bytes = max_file_size_bytes
         self.allowed_extensions = allowed_extensions
@@ -17,9 +17,11 @@ class FileChecker:
         # to annotate when base64 code was removed
         comments = []
 
-        # Check file size if it's more than max_file_size_bytes (default is 1MB)
+        # Check file size if it's more than max_file_size_bytes (default is 10MB)
         # send just a warning and do not open the file,
         # since pattern matching is going to be really slow
+        if not os.path.exists(self.path):
+            return Result(self.path, MISSED_FILE)
         f_size = os.stat(self.path).st_size
         if f_size > self.max_file_size_bytes:
             return Result(self.path, BIG_FILE)
