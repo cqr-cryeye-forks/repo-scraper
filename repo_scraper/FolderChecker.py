@@ -9,7 +9,9 @@ class FolderChecker:
         # List all files in directory, with ability to ignore file if necessary
         self.filenames = fs.list_files_in(folder_path, ignore_git_folder=ignore_git_folder, ignore_file=ignore_path)
         self.allowed_extensions = allowed_extensions
+        self.folder_path = folder_path
 
     def file_traverser(self):
+        print(f'Testing folder {self.folder_path}')
         for filename in self.filenames:
             yield FileChecker(filename, allowed_extensions=self.allowed_extensions).check()

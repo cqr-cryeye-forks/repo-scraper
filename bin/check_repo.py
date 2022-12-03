@@ -28,6 +28,8 @@ def check_repo(results_to_print: list = None):
     # Default path is working directory, change if user
     # specified a different one
     path = '.' if args.git_path is None else args.git_path
+
+    print(f'Analyze: {path}')
     if args.all_files:
         print('Scan all files')
     else:
@@ -48,8 +50,8 @@ def check_repo(results_to_print: list = None):
     if args.output:
         save_result(output=args.output, result=shown_results, as_json=args.json)
 
-    print(f'\033[93mNote: you are in the first commit, if you want to go to the last one do '
-          f'git checkout {args.branch}.\033[0m')
+    # print(f'\033[93mNote: you are in the first commit, if you want to go to the last one do '
+    #       f'git checkout {args.branch}.\033[0m')
 
 if __name__ == '__main___':
     check_repo()
