@@ -1,8 +1,15 @@
 # Result class constants with ANSI colors
-ALERT = '\033[91mAlert!\033[0m'
-WARNING = '\033[93mWarning\033[0m'
-NOTHING = '\033[92mCheck passed\033[0m'
-ERROR = '\033[91mERROR\033[0m'
+class COLORS:
+    YELLOW = '\033[91m'
+    RED = '\033[93m'
+    BLUE = '\033[92m'
+    END = '\033[0m'
+
+
+ALERT = 'Alert!'
+WARNING = 'Warning'
+NOTHING = 'Check passed'
+ERROR = 'ERROR'
 
 BIG_FILE = 'Big file found'
 NOT_PLAIN_TEXT = 'File is not plain text'

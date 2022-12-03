@@ -3,10 +3,11 @@ import os
 from bin.arguments import args
 from repo_scraper import filetype, matchers as m
 from repo_scraper.Result import *
+from repo_scraper.constants.git_diff import MAX_DIFF_ADDITIONS_CHARACTERS
 
 
 class FileChecker:
-    def __init__(self, path, allowed_extensions, max_file_size_bytes=10485760):
+    def __init__(self, path, allowed_extensions, max_file_size_bytes=MAX_DIFF_ADDITIONS_CHARACTERS):
         self.path = path
         self.max_file_size_bytes = max_file_size_bytes
         self.allowed_extensions = allowed_extensions
