@@ -12,12 +12,12 @@ from repo_scraper.GitChecker import GitChecker
 def check_repo(results_to_print: list = None):
     if not results_to_print:
         results_to_print = get_results_level()
-    print('IMPORTANT: This script is going to execute git commands.\n'
-          'Do not change any files or execute git commands in this project'
-          ' while the script is running, have a coffee or something.\n')
+    # print('IMPORTANT: This script is going to execute git commands.\n'
+    #       'Do not change any files or execute git commands in this project'
+    #       ' while the script is running, have a coffee or something.\n')
 
     if not args.force:
-        continue_ = input("Do you want to continue? (y/n): ")
+        continue_ = "y"
         if continue_.lower() != 'y':
             sys.exit('Aborted by the user')
 
@@ -29,11 +29,11 @@ def check_repo(results_to_print: list = None):
     # specified a different one
     path = '.' if args.git_path is None else args.git_path
 
-    print(f'Analyze: {path}')
-    if args.all_files:
-        print('Scan all files')
-    else:
-        print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
+    # print(f'Analyze: {path}')
+    # if args.all_files:
+    #     print('Scan all files')
+    # else:
+    #     print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
 
     # Create an instance of git checker_parser.add_argument("-v", "--verbose", action="store_true",
     # help="prints all results, including no matches and warnings")

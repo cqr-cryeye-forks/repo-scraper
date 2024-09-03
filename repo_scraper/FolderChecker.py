@@ -12,6 +12,6 @@ class FolderChecker:
         self.folder_path = folder_path
 
     def file_traverser(self):
-        print(f'Testing folder {self.folder_path}')
+        # print(f'Testing folder {self.folder_path}')
         for filename in self.filenames:
             yield FileChecker(filename, allowed_extensions=self.allowed_extensions).check()

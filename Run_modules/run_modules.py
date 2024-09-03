@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 import zipfile
-from pathlib import Path
 
 
 def copy_zip_to_directory(zip_file_path, target_directory):

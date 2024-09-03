@@ -12,10 +12,10 @@ from repo_scraper.constants.extensions import *
 def check_dir(results_to_print: list[str] = None):
     if not results_to_print:
         results_to_print = get_results_level()
-    print('IMPORTANT: This script is going to use the filesystem.\n'
-          'Do not change any files in the directory while the script is running, have a coffee or '
-          'something.\n')
-    if not args.force and input("Do you want to continue? (y/n): ").lower() != 'y':
+    # print('IMPORTANT: This script is going to use the filesystem.\n'
+    #       'Do not change any files in the directory while the script is running, have a coffee or '
+    #       'something.\n')
+    if not args.force:
         sys.exit('Aborted by the user')
 
     folder_path = '.' if args.path is None else args.path
@@ -25,15 +25,15 @@ def check_dir(results_to_print: list[str] = None):
     if type(args.extensions) != list:
         allowed_extensions = re.compile(',\s*\.?').split(allowed_extensions.lower())
 
-    if args.all_files:
-        print('Scan all files')
-    else:
-        print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
+    # if args.all_files:
+    #     print('Scan all files')
+    # else:
+    #     print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
 
-    if ignore_path:
-        print(f'Using ignore file: {ignore_path}\n')
-    else:
-        print('\n')
+    # if ignore_path:
+    #     print(f'Using ignore file: {ignore_path}\n')
+    # else:
+    #     print('\n')
 
     # Create an instance of folder checker,
     # this class will list files in all subdirectories,

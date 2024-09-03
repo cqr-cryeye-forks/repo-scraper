@@ -13,7 +13,7 @@ class FileChecker:
         self.allowed_extensions = allowed_extensions
 
     def check(self):
-        print(f'Testing file {self.path}')
+        # print(f'Testing file {self.path}')
         # The comments variable is a list to keep track of useful information
         # encountered when checking, right now, its only being used
         # to annotate when base64 code was removed
