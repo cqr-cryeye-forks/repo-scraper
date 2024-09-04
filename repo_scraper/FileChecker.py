@@ -1,6 +1,7 @@
 import os
+
 from bin.arguments import args
-from repo_scraper import filetype, matchers as m
+from repo_scraper import matchers as m, filetype
 from repo_scraper.Result import *
 from repo_scraper.constants.git_diff import MAX_DIFF_ADDITIONS_CHARACTERS
 
@@ -22,24 +23,22 @@ class FileChecker:
         if filetype.get_extension(self.path) not in self.allowed_extensions and not args.all_files:
             return Result(self.path, FILETYPE_NOT_ALLOWED)
 
+        matches = []
         with open(self.path, 'r', encoding='utf8') as f:
             try:
-                content = f.read()
+                for i, line in enumerate(f, 1):  # Чтение файла построчно с сохранением номера строки
+                    match, _ = m.multi_matcher(line.strip(),
+                                               m.password_matcher,
+                                               m.ip_matcher,
+                                               m.git_token_matcher,
+                                               m.ssh_key_matcher,
+                                               m.strong_password_matcher)
+                    if match:
+                        matches.append([i, line.strip()])  # Сохраняем номер строки и строку
             except UnicodeDecodeError:
                 return Result(self.path, FILETYPE_NOT_ALLOWED)
 
-        has_base64, content = m.base64_matcher(content, remove=True)
-        if has_base64:
-            comments.append('BASE64_REMOVED')
-
-        match, matches = m.multi_matcher(content,
-                                         m.password_matcher,
-                                         m.ip_matcher,
-                                         m.git_token_matcher,
-                                         m.ssh_key_matcher,
-                                         m.strong_password_matcher)
-
-        if match:
+        if matches:
             return Result(self.path, MATCH, matches=matches, comments=comments)
         else:
             return Result(self.path, NOT_MATCH, comments=comments)
