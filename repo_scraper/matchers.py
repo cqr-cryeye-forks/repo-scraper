@@ -1,35 +1,34 @@
 import re
-from functools import reduce
-
 from repo_scraper.constants.regex import (
     REGEX_URL,
     REGEX_PASSWORD,
     REGEX_PWD,
-    REGEX_IP,
     REGEX_BASE_64,
     REGEX_GIT_TOKEN,
     REGEX_SSH_KEY,
     REGEX_STRONG_PASSWORD,
     REGEX_SECRET_KEY,
+    REGEX_IP,
 )
 
 
 def multi_matcher(s, *matchers):
-    """Получает matchers как параметры и применяет их все"""
     results = [m(s) for m in matchers]
-    has_match = [r[0] for r in results]
-    at_least_one = reduce(lambda x, y: x or y, has_match)
-    list_of_lists = [r[1] for r in results if r[1] is not None]
-    matches = [match for single_list in list_of_lists for match in single_list]
-    matches = matches or None
-    return at_least_one, matches
+    has_match = any(r[0] for r in results)
+    matches = [match for r in results if r[1] for match in r[1]]
+    return has_match, matches or None
+
+
+def base64_matcher(s, remove=False):
+    matches = re.findall(REGEX_BASE_64, s)
+    has_base64 = len(matches) > 0
+    return (has_base64, re.sub(REGEX_BASE_64, '""', s)) if remove else (has_base64, matches)
 
 
 def password_matcher(s):
-    """Ищет пароли, ключевые слова и URL в строке"""
-    pwd = re.compile(REGEX_PWD)
-    pass_ = re.compile(REGEX_PASSWORD)
-    urls = re.compile(REGEX_URL)
+    pwd = re.compile(REGEX_PWD, re.IGNORECASE)
+    pass_ = re.compile(REGEX_PASSWORD, re.IGNORECASE)
+    urls = re.compile(REGEX_URL, re.IGNORECASE)
     secret_key = re.compile(REGEX_SECRET_KEY, re.IGNORECASE)
 
     matches = []
@@ -39,12 +38,6 @@ def password_matcher(s):
             matches.append((i, line.strip()))
 
     return bool(matches), matches
-
-
-def base64_matcher(s, remove=False):
-    base64images = re.compile(REGEX_BASE_64).findall(s)
-    has_base64 = len(base64images) > 0
-    return (has_base64, re.sub(REGEX_BASE_64, '""', s)) if remove else has_base64
 
 
 def create_domain_matcher(domain):
@@ -83,5 +76,3 @@ def strong_password_matcher(s):
     """Ищет сильные пароли (8-32 символа) в строке"""
     matches = re.findall(REGEX_STRONG_PASSWORD, s)
     return (True, matches) if matches else (False, None)
-
-

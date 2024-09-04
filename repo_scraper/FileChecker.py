@@ -1,10 +1,8 @@
 import os
-
 from bin.arguments import args
 from repo_scraper import filetype, matchers as m
 from repo_scraper.Result import *
 from repo_scraper.constants.git_diff import MAX_DIFF_ADDITIONS_CHARACTERS
-
 
 class FileChecker:
     def __init__(self, path, allowed_extensions, max_file_size_bytes=MAX_DIFF_ADDITIONS_CHARACTERS):
@@ -34,8 +32,12 @@ class FileChecker:
         if has_base64:
             comments.append('BASE64_REMOVED')
 
-        amazon_aws_matcher = m.create_domain_matcher('amazonaws.com')
-        match, matches = m.multi_matcher(content, m.password_matcher, m.ip_matcher, amazon_aws_matcher)
+        match, matches = m.multi_matcher(content,
+                                         m.password_matcher,
+                                         m.ip_matcher,
+                                         m.git_token_matcher,
+                                         m.ssh_key_matcher,
+                                         m.strong_password_matcher)
 
         if match:
             return Result(self.path, MATCH, matches=matches, comments=comments)
