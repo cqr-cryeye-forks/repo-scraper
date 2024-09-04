@@ -1,17 +1,21 @@
 import argparse
+import json
 import pathlib
+import re
 import subprocess
 import time
 from pathlib import Path
 from typing import Final
 
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
-    remove_all_files, extract_archives_in, save_results_to_json
+    remove_all_files, extract_archives_in
 
 
-def analyze_file_with_repo_scraper(file_path: Path):
-    command = ['python3', 'repo-scraper', '--path', str(file_path), "--force"]
-
+def analyze_file_with_repo_scraper(file_path: Path, json_file=False):
+    if json_file:
+        command = ['python3', 'repo-scraper', '--path', str(file_path), "--force", "--output", json_file, "--json"]
+    else:
+        raise "Enter --output [JSON-FILE-NAME]"
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
@@ -20,12 +24,12 @@ def analyze_file_with_repo_scraper(file_path: Path):
         return f"Error running repo-scraper: {str(e)}"
 
 
-def scan_files(directory):
-    vulnerabilities = []
-    result = analyze_file_with_repo_scraper(directory)
-    if result:
-        vulnerabilities.append(result)
-    return vulnerabilities
+# def scan_files(directory, json_file=False):
+#     vulnerabilities = []
+#     result = analyze_file_with_repo_scraper(directory, json_file=json_file)
+#     if result:
+#         vulnerabilities.append(result)
+#     return vulnerabilities
 
 
 def prepare_repository(repo_url=None, zip_file_name=None, token=None):
@@ -49,26 +53,57 @@ def prepare_repository(repo_url=None, zip_file_name=None, token=None):
     return directory
 
 
-def process_repository(directory, use_gitignore=False):
-    extract_archives_in(directory)
-
-    vulnerabilities = scan_files(directory)
-
-    remove_all_files(directory)
-
-    if not vulnerabilities:
-        vulnerabilities = {"Empty": "No sensitive data or issues found"}
-
-    return vulnerabilities
+# def process_repository(directory, json_file=False):
+#     extract_archives_in(directory)
+#
+#     analyze_file_with_repo_scraper(directory, json_file=json_file)
+#     # scan_files(directory, json_file=json_file)
+#
+#     remove_all_files(directory)
+#
+#     # if not vulnerabilities:
+#     #     vulnerabilities = {"Empty": "No sensitive data or issues found"}
+#     #
+#     # return vulnerabilities
 
 
 def main(repo_url=None, zip_file_name=None, json_file=None):
     directory = prepare_repository(repo_url=repo_url, zip_file_name=zip_file_name)
+
     if directory:
-        vulnerabilities = process_repository(directory)
+        extract_archives_in(directory)
+        analyze_file_with_repo_scraper(directory, json_file=json_file)
+        remove_all_files(directory)
+
+        with open(json_file, "r") as jf_1:
+            data = json.load(jf_1)
+        if data == [] or data == {}:
+            data = {"Empty": "No sensitive data or issues found"}
+        else:
+            data = {
+                "results": transform_matches(data["results"])
+            }
+
     else:
-        vulnerabilities = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
-    save_results_to_json(vulnerabilities, json_file)
+        data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
+    with open(json_file, "w") as jf_2:
+        json.dump(data, jf_2, indent=2)
+
+
+def transform_matches(results):
+    transformed_results = []
+
+    for result in results:
+        new_matches = []
+        for match in result['matches']:
+            cleaned_match = re.sub(r'\"(\w+-?\w*)\":\s*\"(.*?)\"', r'\1: \2', match)
+            new_matches.append(cleaned_match)
+
+        transformed_result = result.copy()
+        transformed_result['matches'] = new_matches
+        transformed_results.append(transformed_result)
+
+    return transformed_results
 
 
 if __name__ == "__main__":
