@@ -5,7 +5,7 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import Final
+from typing import Final, List, Dict
 
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
     remove_all_files, extract_archives_in
@@ -22,14 +22,6 @@ def analyze_file_with_repo_scraper(file_path: Path, json_file=False):
         return stdout.decode()
     except Exception as e:
         return f"Error running repo-scraper: {str(e)}"
-
-
-# def scan_files(directory, json_file=False):
-#     vulnerabilities = []
-#     result = analyze_file_with_repo_scraper(directory, json_file=json_file)
-#     if result:
-#         vulnerabilities.append(result)
-#     return vulnerabilities
 
 
 def prepare_repository(repo_url=None, zip_file_name=None, token=None):
@@ -53,20 +45,6 @@ def prepare_repository(repo_url=None, zip_file_name=None, token=None):
     return directory
 
 
-# def process_repository(directory, json_file=False):
-#     extract_archives_in(directory)
-#
-#     analyze_file_with_repo_scraper(directory, json_file=json_file)
-#     # scan_files(directory, json_file=json_file)
-#
-#     remove_all_files(directory)
-#
-#     # if not vulnerabilities:
-#     #     vulnerabilities = {"Empty": "No sensitive data or issues found"}
-#     #
-#     # return vulnerabilities
-
-
 def main(repo_url=None, zip_file_name=None, json_file=None):
     directory = prepare_repository(repo_url=repo_url, zip_file_name=zip_file_name)
 
@@ -80,9 +58,7 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
         if data == [] or data == {}:
             data = {"Empty": "No sensitive data or issues found"}
         else:
-            data = {
-                "results": transform_matches(data["results"])
-            }
+            data = parse_sensitive_data(data)
 
     else:
         data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
@@ -90,20 +66,40 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
         json.dump(data, jf_2, indent=2)
 
 
-def transform_matches(results):
-    transformed_results = []
+def parse_sensitive_data(data: Dict) -> List[Dict[str, str]]:
+    """
+    Парсит JSON с чувствительными данными, извлекая номер строки и соответствующую строку уязвимости.
 
-    for result in results:
-        new_matches = []
-        for match in result['matches']:
-            cleaned_match = re.sub(r'\"(\w+-?\w*)\":\s*\"(.*?)\"', r'\1: \2', match)
-            new_matches.append(cleaned_match)
+    :param data: JSON-объект, содержащий результаты сканирования с совпадениями.
+    :return: Список словарей, где 'line_in_code' — номер строки, а 'vulnerability_line' — строка с уязвимостью.
+    """
+    parsed_results = []
 
-        transformed_result = result.copy()
-        transformed_result['matches'] = new_matches
-        transformed_results.append(transformed_result)
+    for result in data["results"]:
+        for match in result["matches"]:
+            if isinstance(match, list) and len(match) == 2:
+                line_num, line = match
+            elif isinstance(match, list):
+                # Если это список, но не пара, присоединим элементы в строку
+                line_num = None
+                line = ' '.join(str(m) for m in match)
+            else:
+                # Если это просто строка
+                line_num = None
+                line = str(match)
 
-    return transformed_results
+            formatted_line = line.replace('\\"', '"').replace('"', "'").strip()
+
+            entry = {
+                "line_in_code": line_num,
+                "vulnerability_line": formatted_line,
+                "file": result["identifier"],
+                "reason": result["reason"],
+                "result_type": result["result_type"]
+            }
+            parsed_results.append(entry)
+
+    return parsed_results
 
 
 if __name__ == "__main__":
