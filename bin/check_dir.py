@@ -6,15 +6,11 @@ from bin.arguments import args
 from bin.output import save_result
 from bin.utils import get_results_level
 from repo_scraper.FolderChecker import FolderChecker
-from repo_scraper.constants.extensions import *
 
 
 def check_dir(results_to_print: list[str] = None):
     if not results_to_print:
         results_to_print = get_results_level()
-    # print('IMPORTANT: This script is going to use the filesystem.\n'
-    #       'Do not change any files in the directory while the script is running, have a coffee or '
-    #       'something.\n')
     if not args.force:
         sys.exit('Aborted by the user')
 
@@ -23,17 +19,7 @@ def check_dir(results_to_print: list[str] = None):
 
     allowed_extensions = args.extensions
     if type(args.extensions) != list:
-        allowed_extensions = re.compile(',\s*\.?').split(allowed_extensions.lower())
-
-    # if args.all_files:
-    #     print('Scan all files')
-    # else:
-    #     print(f"Allowed extensions: {reduce(lambda x, y: f'{x}, {y}', allowed_extensions)}")
-
-    # if ignore_path:
-    #     print(f'Using ignore file: {ignore_path}\n')
-    # else:
-    #     print('\n')
+        allowed_extensions = re.compile(r',\s*\.?').split(allowed_extensions.lower())
 
     # Create an instance of folder checker,
     # this class will list files in all subdirectories,
