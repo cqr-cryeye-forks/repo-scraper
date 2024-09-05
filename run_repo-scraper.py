@@ -1,11 +1,10 @@
 import argparse
 import json
 import pathlib
-import re
 import subprocess
 import time
 from pathlib import Path
-from typing import Final, List, Dict
+from typing import Final, List, Dict, Any
 
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
     remove_all_files, extract_archives_in
@@ -66,36 +65,39 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
         json.dump(data, jf_2, indent=2)
 
 
-def parse_sensitive_data(data: Dict) -> List[Dict[str, str]]:
-    """
-    Парсит JSON с чувствительными данными, извлекая номер строки и соответствующую строку уязвимости.
-
-    :param data: JSON-объект, содержащий результаты сканирования с совпадениями.
-    :return: Список словарей, где 'line_in_code' — номер строки, а 'vulnerability_line' — строка с уязвимостью.
-    """
+def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
     parsed_results = []
 
     for result in data["results"]:
+        file_path = result["identifier"]
+        reason = result["reason"]
+        result_type = result["result_type"]
+
         for match in result["matches"]:
-            if isinstance(match, list) and len(match) == 2:
+            line_num = None
+
+            if isinstance(match, list) and len(match) == 2 and isinstance(match[0], int):
+                # Если match содержит номер строки и строку
                 line_num, line = match
             elif isinstance(match, list):
-                # Если это список, но не пара, присоединим элементы в строку
-                line_num = None
-                line = ' '.join(str(m) for m in match)
+                # Если это список без номера строки
+                line = " ".join(str(m).strip() for m in match)
             else:
                 # Если это просто строка
-                line_num = None
-                line = str(match)
+                line = str(match).strip()
 
+            if "display_name" in line or "Python 2" in line:
+                continue
+
+            # Форматируем строку
             formatted_line = line.replace('\\"', '"').replace('"', "'").strip()
 
             entry = {
                 "line_in_code": line_num,
                 "vulnerability_line": formatted_line,
-                "file": result["identifier"],
-                "reason": result["reason"],
-                "result_type": result["result_type"]
+                "file": file_path,
+                "reason": reason,
+                "result_type": result_type
             }
             parsed_results.append(entry)
 
