@@ -5,6 +5,7 @@ from repo_scraper import matchers as m, filetype
 from repo_scraper.Result import *
 from repo_scraper.constants.git_diff import MAX_DIFF_ADDITIONS_CHARACTERS
 
+
 class FileChecker:
     def __init__(self, path, allowed_extensions, max_file_size_bytes=MAX_DIFF_ADDITIONS_CHARACTERS):
         self.path = path
@@ -27,12 +28,20 @@ class FileChecker:
         with open(self.path, 'r', encoding='utf8') as f:
             try:
                 for i, line in enumerate(f, 1):  # Чтение файла построчно с сохранением номера строки
-                    match, _ = m.multi_matcher(line.strip(),
-                                               m.password_matcher,
-                                               m.ip_matcher,
-                                               m.git_token_matcher,
-                                               m.ssh_key_matcher,
-                                               m.strong_password_matcher)
+                    match, detected = m.multi_matcher(line.strip(),
+                                                      m.multi_matcher,
+                    m.base64_matcher,
+                    m.url_matcher,
+                    m.git_token_matcher,
+                    m.ssh_key_matcher,
+                    m.strong_password_matcher,
+                    m.ip_matcher,
+                    m.password_matcher,
+                    m.pwd_matcher,
+                    m.secret_key_matcher,
+                    m.api_key_matcher
+                    )
+
                     if match:
                         matches.append([i, line.strip()])  # Сохраняем номер строки и строку
             except UnicodeDecodeError:
