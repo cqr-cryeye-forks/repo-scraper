@@ -1,6 +1,7 @@
 import argparse
 import json
 import pathlib
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -58,11 +59,40 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
             data = {"Empty": "No sensitive data or issues found"}
         else:
             data = parse_sensitive_data(data)
+            data = process_vulnerability_data(data)
+            if data == [] or data == {}:
+                data = {"Empty": "No sensitive data or issues found"}
 
     else:
         data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
+
+    print(len(data))
     with open(json_file, "w") as jf_2:
         json.dump(data, jf_2, indent=2)
+
+
+def process_vulnerability_data(data):
+    sensitive_pattern = re.compile(
+        r'(?i)\b(?:secret|key|token|password|pwd|pass|auth)\b\s*[:=]\s*[\'"]?[A-Za-z0-9@#$%^&+=]{8,}[\'"]?'
+    )
+
+    random_password_pattern = re.compile(
+        r'(?i)[\'"]?[A-Za-z0-9@#$%^&+=]{8,}[\'"]?'
+    )
+
+    alert_list = []
+
+    for item in data:
+        line = item.get('vulnerability_line', '')
+
+        if sensitive_pattern.search(line):
+            item['reason'] = "Sensitive Information Detected (e.g., Secret Key, Password)"
+            alert_list.append(item)
+        elif random_password_pattern.search(line):
+            item['reason'] = "Potentially Random Password or Token Detected"
+            alert_list.append(item)
+
+    return alert_list
 
 
 def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
@@ -77,19 +107,15 @@ def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
             line_num = None
 
             if isinstance(match, list) and len(match) == 2 and isinstance(match[0], int):
-                # Если match содержит номер строки и строку
                 line_num, line = match
             elif isinstance(match, list):
-                # Если это список без номера строки
                 line = " ".join(str(m).strip() for m in match)
             else:
-                # Если это просто строка
                 line = str(match).strip()
 
             if "display_name" in line or "Python 2" in line:
                 continue
 
-            # Форматируем строку
             formatted_line = line.replace('\\"', '"').replace('"', "'").strip()
 
             entry = {
