@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Final, List, Dict, Any
 
+from Run_modules.pattern_script import process_data
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
     remove_all_files, extract_archives_in
 
@@ -59,7 +60,7 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
             data = {"Empty": "No sensitive data or issues found"}
         else:
             data = parse_sensitive_data(data)
-            data = process_vulnerability_data(data)
+            data = process_data(data)
             if data == [] or data == {}:
                 data = {"Empty": "No sensitive data or issues found"}
 
@@ -71,37 +72,12 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
         json.dump(data, jf_2, indent=2)
 
 
-def process_vulnerability_data(data):
-    sensitive_pattern = re.compile(
-        r'(?i)\b(?:secret|key|token|password|pwd|pass|auth)\b\s*[:=]\s*[\'"]?[A-Za-z0-9@#$%^&+=]{8,}[\'"]?'
-    )
-
-    random_password_pattern = re.compile(
-        r'(?i)[\'"]?[A-Za-z0-9@#$%^&+=]{8,}[\'"]?'
-    )
-
-    alert_list = []
-
-    for item in data:
-        line = item.get('vulnerability_line', '')
-
-        if sensitive_pattern.search(line):
-            item['reason'] = "Sensitive Information Detected (e.g., Secret Key, Password)"
-            alert_list.append(item)
-        elif random_password_pattern.search(line):
-            item['reason'] = "Potentially Random Password or Token Detected"
-            alert_list.append(item)
-
-    return alert_list
-
-
 def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
     parsed_results = []
 
     for result in data["results"]:
         file_path = result["identifier"]
         reason = result["reason"]
-        result_type = result["result_type"]
 
         for match in result["matches"]:
             line_num = None
@@ -123,7 +99,6 @@ def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
                 "vulnerability_line": formatted_line,
                 "file": file_path,
                 "reason": reason,
-                "result_type": result_type
             }
             parsed_results.append(entry)
 
