@@ -1,12 +1,11 @@
 import datetime
 import re
 
-# Обновленные регулярные выражения для различных уязвимостей
 patterns = {
     "random_generated_password": r"'[A-Za-z0-9_]+':\s*['\"]([A-Za-z0-9@#\$%\^\&\*\(\)\-_\+=!]{8,})['\"]",
-    "random_digits": r'\b\d{10,}\b',  # Набор случайных цифр (8+ цифр)
-    "ssh_key": r'ssh-(rsa|dss) [A-Za-z0-9+/=]{100,}',  # SSH ключ
-    "git_token": r'[A-Za-z0-9_-]{20,40}',  # Git токен длиной 20-40 символов
+    "random_digits": r'\b\d{10,}\b',
+    "ssh_key": r'ssh-(rsa|dss) [A-Za-z0-9+/=]{100,}',
+    "git_token": r'[A-Za-z0-9_-]{20,40}',
 }
 
 
@@ -16,15 +15,13 @@ def generate_password_variants(keywords):
     variants = []
 
     for keyword in keywords:
-        variants.append(keyword)  # Оригинальный пароль
+        variants.append(keyword)
         for num in numbers:
-            variants.append(f"{keyword}{num}")  # Добавляем цифры к концу
-            variants.append(f"{num}{keyword}")  # Добавляем цифры к началу
-        # Добавляем год и текущий год
+            variants.append(f"{keyword}{num}")
+            variants.append(f"{num}{keyword}")
         variants.append(f"{keyword}{current_year}")
         variants.append(f"{current_year}{keyword}")
-        # Пробуем разные комбинации с годовыми цифрами
-        variants.append(f"{keyword}{str(current_year)[-2:]}")  # Последние две цифры года
+        variants.append(f"{keyword}{str(current_year)[-2:]}")
         variants.append(f"{str(current_year)[-2:]}{keyword}")
 
     return variants
@@ -37,7 +34,6 @@ def check_password_in_line(line, password_variants):
     return False
 
 
-# Основная функция для обработки данных
 def process_data(data_list):
     vulnerabilities = {
         "random_generated_password": [],
@@ -86,10 +82,6 @@ def process_data(data_list):
                     data["reason"] = f"Detected a password variant: {variant}"
                     vulnerabilities["password_detected"].append(data)
 
-        # else:
-        #     data["reason"] = "No specific vulnerability detected"
-        #     vulnerabilities["other"].append(data)
-
     return vulnerabilities
 
 
@@ -112,8 +104,5 @@ def split_assignment(line):
             return None
     else:
         return None
-
-    # key = key_value[0].strip().strip("'").strip('"')
-    # value = key_value[1].strip().strip("'").strip('"').strip(',')
 
     return key_value[0], key_value[1]

@@ -27,7 +27,7 @@ class FileChecker:
         matches = []
         with open(self.path, 'r', encoding='utf8') as f:
             try:
-                for i, line in enumerate(f, 1):  # Чтение файла построчно с сохранением номера строки
+                for i, line in enumerate(f, 1):
                     match, detected = m.multi_matcher(line.strip(),
                                                       m.multi_matcher,
                     m.base64_matcher,
@@ -43,7 +43,7 @@ class FileChecker:
                     )
 
                     if match:
-                        matches.append([i, line.strip()])  # Сохраняем номер строки и строку
+                        matches.append([i, line.strip()])
             except UnicodeDecodeError:
                 return Result(self.path, FILETYPE_NOT_ALLOWED)
 
