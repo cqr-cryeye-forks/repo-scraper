@@ -1,13 +1,40 @@
+import datetime
 import re
 
 # Обновленные регулярные выражения для различных уязвимостей
 patterns = {
     "random_generated_password": r"'[A-Za-z0-9_]+':\s*['\"]([A-Za-z0-9@#\$%\^\&\*\(\)\-_\+=!]{8,})['\"]",
-    "random_digits": r'\b\d{10,}\b',  # Набор случайных цифр (10+ цифр)
+    "random_digits": r'\b\d{10,}\b',  # Набор случайных цифр (8+ цифр)
     "ssh_key": r'ssh-(rsa|dss) [A-Za-z0-9+/=]{100,}',  # SSH ключ
     "git_token": r'[A-Za-z0-9_-]{20,40}',  # Git токен длиной 20-40 символов
-    "warning_message": r'WARNING:.*'  # Сообщение с предупреждением "WARNING"
 }
+
+
+def generate_password_variants(keywords):
+    current_year = datetime.datetime.now().year
+    numbers = ["123", "456", "789", "000", "111", "1234", "12345", ]
+    variants = []
+
+    for keyword in keywords:
+        variants.append(keyword)  # Оригинальный пароль
+        for num in numbers:
+            variants.append(f"{keyword}{num}")  # Добавляем цифры к концу
+            variants.append(f"{num}{keyword}")  # Добавляем цифры к началу
+        # Добавляем год и текущий год
+        variants.append(f"{keyword}{current_year}")
+        variants.append(f"{current_year}{keyword}")
+        # Пробуем разные комбинации с годовыми цифрами
+        variants.append(f"{keyword}{str(current_year)[-2:]}")  # Последние две цифры года
+        variants.append(f"{str(current_year)[-2:]}{keyword}")
+
+    return variants
+
+
+def check_password_in_line(line, password_variants):
+    for variant in password_variants:
+        if variant in line:
+            return variant
+    return False
 
 
 # Основная функция для обработки данных
@@ -17,9 +44,13 @@ def process_data(data_list):
         "random_digits": [],
         "ssh_key": [],
         "git_token": [],
-        "warning_message": [],
-        "other": []
+        "other": [],
+        "password_detected": [],
     }
+
+    # Пример использования
+    keywords = ["password", "admin", "secret", "my_key", "test", "qwerty"]
+    password_variants = generate_password_variants(keywords)
 
     for data in data_list:
         if "vulnerability_line" in data:
@@ -31,10 +62,8 @@ def process_data(data_list):
                 vulnerabilities["ssh_key"].append(data)
             # Проверка на Git-токен
             elif re.search(patterns["git_token"], line):
-                print(line)
                 try:
                     value = line.split('=')[1].strip().strip("'")
-                    print(value)
                     if value.startswith('ghp_'):
                         data["reason"] = "Git token detected: starts with 'ghp_'"
                         vulnerabilities["git_token"].append(data)
@@ -51,10 +80,9 @@ def process_data(data_list):
             elif re.search(patterns["random_digits"], line):
                 data["reason"] = "Detected a sequence of random digits (potential sensitive data)"
                 vulnerabilities["random_digits"].append(data)
-            # Проверка на предупреждение "WARNING"
-            elif re.search(patterns["warning_message"], line):
-                data["reason"] = "Warning message detected: possible secret key or sensitive data"
-                vulnerabilities["warning_message"].append(data)
+            elif variant := check_password_in_line(line, password_variants):
+                data["reason"] = f"Detected a password variant: {variant}"
+                vulnerabilities["password_detected"].append(data)
             else:
                 data["reason"] = "No specific vulnerability detected"
                 vulnerabilities["other"].append(data)
