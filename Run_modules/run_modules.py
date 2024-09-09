@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import shutil
@@ -61,15 +60,6 @@ def check_name(repo_url=None, zip_file_name=None):
     return repo_name
 
 
-def load_gitignore(directory):
-    gitignore_path = directory / '.gitignore'
-    ignore_patterns = []
-    if gitignore_path.exists():
-        with open(gitignore_path, 'r') as file:
-            ignore_patterns = [line.strip() for line in file if line.strip() and not line.startswith('#')]
-    return ignore_patterns
-
-
 def extract_archives_in(directory):
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
@@ -78,14 +68,6 @@ def extract_archives_in(directory):
             with zipfile.ZipFile(item_path, 'r') as zip_ref:
                 zip_ref.extractall(directory)
             os.remove(item_path)
-
-
-def save_results_to_json(results, json_file):
-    with open(json_file, 'w', encoding='utf-8') as jf:
-        json.dump(results, jf, indent=4)
-    print(f"Results saved to {json_file}")
-    print("=" * 44)
-    print(results)
 
 
 def clone_repo(repo_url, dest_dir, token=None):
