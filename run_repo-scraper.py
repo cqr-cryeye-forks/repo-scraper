@@ -8,7 +8,7 @@ from typing import Final, List, Dict, Any
 
 from Run_modules.pattern_script import process_data
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
-    remove_all_files, extract_archives_in, count_dictionaries
+    remove_all_files, extract_archives_in
 
 
 def analyze_file_with_repo_scraper(file_path: Path, json_file=False):
@@ -66,10 +66,7 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
     else:
         data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
 
-    total_dictionaries = count_dictionaries(data)
-    print(total_dictionaries)
-    with open(json_file, "w") as jf_2:
-        json.dump(data, jf_2, indent=2)
+    print(len(data))
 
 
 def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
