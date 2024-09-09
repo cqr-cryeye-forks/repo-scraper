@@ -35,13 +35,7 @@ def check_password_in_line(line, password_variants):
 
 
 def process_data(data_list):
-    vulnerabilities = {
-        "random_generated_password": [],
-        "random_digits": [],
-        "ssh_key": [],
-        "git_token": [],
-        "password_detected": [],
-    }
+    vulnerabilities = []
 
     keywords = ["password", "admin", "secret", "my_key", "test", "qwerty"]
     password_variants = generate_password_variants(keywords)
@@ -52,35 +46,35 @@ def process_data(data_list):
 
             if re.search(patterns["ssh_key"], line):
                 data["reason"] = "SSH key detected"
-                vulnerabilities["ssh_key"].append(data)
+                vulnerabilities.append(data)
 
             elif re.search(patterns["git_token"], line):
                 try:
                     value = line.split('=')[1].strip().strip("'")
                     if value.startswith('ghp_'):
                         data["reason"] = "Git token detected: starts with 'ghp_'"
-                        vulnerabilities["git_token"].append(data)
+                        vulnerabilities.append(data)
                     else:
                         raise IndexError
                 except IndexError:
                     if split_assignment(line):
                         data["reason"] = "Detected a randomly generated password"
-                        vulnerabilities["random_generated_password"].append(data)
+                        vulnerabilities.append(data)
 
             elif re.search(patterns["random_generated_password"], line):
                 if split_assignment(line):
                     data["reason"] = "Detected a randomly generated password"
-                    vulnerabilities["random_generated_password"].append(data)
+                    vulnerabilities.append(data)
 
             elif re.search(patterns["random_digits"], line):
                 if split_assignment(line):
                     data["reason"] = "Detected a sequence of random digits (potential sensitive data)"
-                    vulnerabilities["random_digits"].append(data)
+                    vulnerabilities.append(data)
 
             elif variant := check_password_in_line(line, password_variants):
                 if split_assignment(line):
                     data["reason"] = f"Detected a password variant: {variant}"
-                    vulnerabilities["password_detected"].append(data)
+                    vulnerabilities.append(data)
 
     return vulnerabilities
 

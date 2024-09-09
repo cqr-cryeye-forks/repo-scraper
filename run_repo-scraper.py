@@ -95,9 +95,9 @@ def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
             formatted_line = line.replace('\\"', '"').replace('"', "'").strip()
 
             entry = {
-                "line_in_code": line_num,
-                "vulnerability_line": formatted_line,
                 "file": file_path,
+                "vulnerability_line": formatted_line,
+                "line_in_code": line_num,
                 "reason": reason,
             }
             parsed_results.append(entry)
