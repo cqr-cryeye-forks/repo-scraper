@@ -84,19 +84,71 @@ def split_assignment(line):
         key_value = line.split(':', 1)
         if key_value[0].endswith("http") or key_value[0].endswith("https"):
             return None
-        elif " " in key_value[0]:
+        elif " " in key_value[0] or "." in key_value[0]:
             return None
         elif " " in key_value[1]:
-            return None
+            key_value = key_value[1].split(" ", 1)
+            if " " in key_value[1] and len(key_value[1]) >= 8:
+                return None
+            elif "cve" in key_value[1].lower():
+                return None
+            elif is_date_format(key_value[1].split("'")[1]):
+                return None
     elif '=' in line:
         key_value = line.split('=', 1)
         if key_value[0].endswith("href"):
             return None
-        elif " " in key_value[0]:
+        elif " " in key_value[0] or "." in key_value[0]:
             return None
         elif " " in key_value[1]:
-            return None
+            key_value = key_value[1].split(" ", 1)
+            if " " in key_value[1] and len(key_value[1]) >= 8:
+                return None
+            elif "cve" in key_value[1].lower():
+                return None
+            elif is_date_format(key_value[1].split("'")[1]):
+                return None
     else:
         return None
 
-    return key_value[0], key_value[1]
+    return True
+
+def is_date_format(key):
+    date_formats = [
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M",
+        "%Y-%m-%d",
+        "%d/%m/%Y",
+        "%m/%d/%Y",
+        "%d-%m-%Y",
+        "%m-%d-%Y",
+        "%d.%m.%Y",
+        "%H:%M:%S",
+        "%H:%M",
+        "%Y%m%d",
+        "%d %b %Y",
+        "%d %B %Y",
+        "%B %d, %Y",
+        "%b %d, %Y",
+        "%d %b %Y %H:%M:%S",
+        "%d %B %Y %H:%M:%S",
+        "%A, %d %B %Y",
+        "%a, %d %b %Y %H:%M:%S",
+        "%I:%M %p",
+        "%I:%M:%S %p",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y/%m/%d %H:%M:%S",
+        "%d-%m-%Y %H:%M:%S",
+        "%d/%m/%Y %H:%M:%S",
+        "%Y.%m.%d %H:%M:%S",
+    ]
+
+    for fmt in date_formats:
+        try:
+            datetime.datetime.strptime(key, fmt)
+            return True
+        except ValueError:
+            continue
+
+    return False

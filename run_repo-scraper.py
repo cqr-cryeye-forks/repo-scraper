@@ -45,30 +45,6 @@ def prepare_repository(repo_url=None, zip_file_name=None, token=None):
     return directory
 
 
-def main(repo_url=None, zip_file_name=None, json_file=None):
-    directory = prepare_repository(repo_url=repo_url, zip_file_name=zip_file_name)
-
-    if directory:
-        extract_archives_in(directory)
-        analyze_file_with_repo_scraper(directory, json_file=json_file)
-        remove_all_files(directory)
-
-        with open(json_file, "r") as jf_1:
-            data = json.load(jf_1)
-        if data == [] or data == {}:
-            data = {"Empty": "No sensitive data or issues found"}
-        else:
-            data = parse_sensitive_data(data)
-            data = process_data(data)
-            if data == [] or data == {}:
-                data = {"Empty": "No sensitive data or issues found"}
-
-    else:
-        data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
-
-    print(len(data))
-
-
 def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
     parsed_results = []
 
@@ -100,6 +76,33 @@ def parse_sensitive_data(data: Dict[str, Any]) -> List[Dict[str, str]]:
             parsed_results.append(entry)
 
     return parsed_results
+
+
+def main(repo_url=None, zip_file_name=None, json_file=None):
+    directory = prepare_repository(repo_url=repo_url, zip_file_name=zip_file_name)
+
+    if directory:
+        extract_archives_in(directory)
+        analyze_file_with_repo_scraper(directory, json_file=json_file)
+        remove_all_files(directory)
+
+        with open(json_file, "r") as jf_1:
+            data = json.load(jf_1)
+        if data == [] or data == {}:
+            data = {"Empty": "No sensitive data or issues found"}
+        else:
+            data = parse_sensitive_data(data)
+            data = process_data(data)
+            if data == [] or data == {}:
+                data = {"Empty": "No sensitive data or issues found"}
+
+    else:
+        data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
+
+    with open(json_file, "w") as jf_1:
+        json.dump(data, jf_1, indent=2)
+
+    print(len(data))
 
 
 if __name__ == "__main__":
