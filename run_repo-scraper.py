@@ -1,7 +1,6 @@
 import argparse
 import json
 import pathlib
-import re
 import subprocess
 import time
 from pathlib import Path
@@ -9,7 +8,7 @@ from typing import Final, List, Dict, Any
 
 from Run_modules.pattern_script import process_data
 from Run_modules.run_modules import check_name, clone_repo, RepositoryNotFoundError, copy_zip_to_directory, \
-    remove_all_files, extract_archives_in
+    remove_all_files, extract_archives_in, count_dictionaries
 
 
 def analyze_file_with_repo_scraper(file_path: Path, json_file=False):
@@ -67,7 +66,8 @@ def main(repo_url=None, zip_file_name=None, json_file=None):
     else:
         data = {"Error": "Invalid link to GitHub repository, try to use git token with Registry"}
 
-    print(len(data))
+    total_dictionaries = count_dictionaries(data)
+    print(total_dictionaries)
     with open(json_file, "w") as jf_2:
         json.dump(data, jf_2, indent=2)
 

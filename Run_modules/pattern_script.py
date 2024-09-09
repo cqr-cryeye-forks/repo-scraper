@@ -44,11 +44,9 @@ def process_data(data_list):
         "random_digits": [],
         "ssh_key": [],
         "git_token": [],
-        "other": [],
         "password_detected": [],
     }
 
-    # Пример использования
     keywords = ["password", "admin", "secret", "my_key", "test", "qwerty"]
     password_variants = generate_password_variants(keywords)
 
@@ -56,11 +54,10 @@ def process_data(data_list):
         if "vulnerability_line" in data:
             line = data["vulnerability_line"]
 
-            # Проверка на SSH-ключи
             if re.search(patterns["ssh_key"], line):
                 data["reason"] = "SSH key detected"
                 vulnerabilities["ssh_key"].append(data)
-            # Проверка на Git-токен
+
             elif re.search(patterns["git_token"], line):
                 try:
                     value = line.split('=')[1].strip().strip("'")
@@ -70,21 +67,53 @@ def process_data(data_list):
                     else:
                         raise IndexError
                 except IndexError:
+                    if split_assignment(line):
+                        data["reason"] = "Detected a randomly generated password"
+                        vulnerabilities["random_generated_password"].append(data)
+
+            elif re.search(patterns["random_generated_password"], line):
+                if split_assignment(line):
                     data["reason"] = "Detected a randomly generated password"
                     vulnerabilities["random_generated_password"].append(data)
-            # Проверка на случайно сгенерированный пароль
-            elif re.search(patterns["random_generated_password"], line):
-                data["reason"] = "Detected a randomly generated password"
-                vulnerabilities["random_generated_password"].append(data)
-            # Проверка на набор случайных цифр
+
             elif re.search(patterns["random_digits"], line):
-                data["reason"] = "Detected a sequence of random digits (potential sensitive data)"
-                vulnerabilities["random_digits"].append(data)
+                if split_assignment(line):
+                    data["reason"] = "Detected a sequence of random digits (potential sensitive data)"
+                    vulnerabilities["random_digits"].append(data)
+
             elif variant := check_password_in_line(line, password_variants):
-                data["reason"] = f"Detected a password variant: {variant}"
-                vulnerabilities["password_detected"].append(data)
-            else:
-                data["reason"] = "No specific vulnerability detected"
-                vulnerabilities["other"].append(data)
+                if split_assignment(line):
+                    data["reason"] = f"Detected a password variant: {variant}"
+                    vulnerabilities["password_detected"].append(data)
+
+        # else:
+        #     data["reason"] = "No specific vulnerability detected"
+        #     vulnerabilities["other"].append(data)
 
     return vulnerabilities
+
+
+def split_assignment(line):
+    if ':' in line:
+        key_value = line.split(':', 1)
+        if key_value[0].endswith("http") or key_value[0].endswith("https"):
+            return None
+        elif " " in key_value[0]:
+            return None
+        elif " " in key_value[1]:
+            return None
+    elif '=' in line:
+        key_value = line.split('=', 1)
+        if key_value[0].endswith("href"):
+            return None
+        elif " " in key_value[0]:
+            return None
+        elif " " in key_value[1]:
+            return None
+    else:
+        return None
+
+    # key = key_value[0].strip().strip("'").strip('"')
+    # value = key_value[1].strip().strip("'").strip('"').strip(',')
+
+    return key_value[0], key_value[1]
