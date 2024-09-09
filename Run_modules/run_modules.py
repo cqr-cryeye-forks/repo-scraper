@@ -91,3 +91,10 @@ def clone_repo(repo_url, dest_dir, token=None):
 class RepositoryNotFoundError(ValueError):
     """Invalid link to GitHub repository"""
     pass
+
+
+def count_dictionaries(nested_list):
+    count = 0
+    for _, inner_list in nested_list.items():
+        count += len(inner_list)  # Считаем количество словарей в каждом вложенном списке
+    return count
